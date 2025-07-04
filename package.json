@@ -8,7 +8,7 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "bin": {
-    "git-llm-reporter": "./generate-report.js"
+    "git-llm-reporter": "generate-report.js"
   },
   "keywords": [
     "git",
