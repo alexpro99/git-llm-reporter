@@ -1,0 +1,21 @@
+{
+  "name": "git-llm-reporter",
+  "version": "1.0.0",
+  "description": "Genera reportes de trabajo usando Git y Gemini",
+  "type": "module",
+  "main": "generate-report.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "bin": {
+    "git-llm-reporter": "./generate-report.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@google/generative-ai": "^0.24.1",
+    "dotenv": "^17.0.1",
+    "simple-git": "^3.28.0"
+  }
+}
