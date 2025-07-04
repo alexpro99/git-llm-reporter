@@ -10,9 +10,23 @@
   "bin": {
     "git-llm-reporter": "./generate-report.js"
   },
-  "keywords": [],
-  "author": "",
+  "keywords": [
+    "git",
+    "llm",
+    "gemini",
+    "reports",
+    "cli"
+  ],
+  "author": "alexpro99",
   "license": "ISC",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/alexpro99/git-llm-reporter.git"
+  },
+  "bugs": {
+    "url": "https://github.com/alexpro99/git-llm-reporter/issues"
+  },
+  "homepage": "https://github.com/alexpro99/git-llm-reporter#readme",
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
     "dotenv": "^17.0.1",
