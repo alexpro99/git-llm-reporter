@@ -5,9 +5,27 @@ import { parseArgs } from "./utils/argsParser.js";
 
 dotenv.config();
 
+const showHelp = () => {
+  console.log(`
+  Uso: git-llm-reporter <rango-de-commits> [opciones]
+
+  Genera un reporte de un rango de commits usando un modelo de IA.
+
+  Opciones:
+    -h, --help      Muestra esta ayuda.
+    -v, --verbose   Muestra los logs de los commits.
+    -m, --model     Especifica el modelo de IA a usar. Por defecto: gemini-2.5-pro.
+  `);
+}
+
 export async function run() {
   const args = process.argv.slice(2);
-  const { commitRange, verbose, modelName } = parseArgs(args);
+  const { commitRange, verbose, modelName, help } = parseArgs(args);
+
+  if (help) {
+    showHelp();
+    process.exit(0);
+  }
 
   if (!commitRange) {
     console.error("Debes proporcionar un rango de commits. Ejemplo: 'main..develop'");
