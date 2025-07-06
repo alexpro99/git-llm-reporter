@@ -21,16 +21,17 @@ const getSummaryPrompt = (commitData) => `
   Responde SOLAMENTE con el reporte, no incluyas explicaciones adicionales.
 `;
 
-const getPersonalPrompt = (commitData) => `
-  Eres un asistente de desarrollo encargado de generar un reporte de trabajo personal a partir de logs de commits. Tu objetivo es ayudar a los desarrolladores a documentar su trabajo de una manera clara y concisa.
+const getTechnicalPrompt = (commitData) => `
+  Eres un desarrollador que debe entregar un reporte técnico y conciso a su jefe sobre el trabajo realizado, basado en los logs de commits.
 
-  Basado en los siguientes commits, genera un reporte de trabajo que incluya:
-  1. Un título que resuma el período de trabajo.
-  2. Una lista de las tareas más importantes en las que has trabajado.
-  3. Un resumen de los commits realizados, agrupados por día.
-  4. Una sección de "Reflexiones" donde puedas añadir tus pensamientos sobre el trabajo realizado, los desafíos encontrados y los próximos pasos.
+  Genera un reporte que incluya:
+  1. Un título breve y descriptivo del trabajo realizado.
+  2. Una lista clara y ordenada de las tareas principales completadas, agrupadas por funcionalidad o módulo.
+  3. Para cada tarea, incluye una breve descripción técnica de los cambios realizados y su impacto.
+  4. Una estimación de horas dedicadas a cada tarea.
+  5. Una sección final de "Próximos pasos" o tareas pendientes relevantes.
 
-  Utiliza un tono personal y reflexivo. El reporte debe ser útil para que el desarrollador pueda recordar su trabajo y compartirlo con su equipo.
+  El reporte debe ser directo, profesional y útil para la supervisión técnica. Evita explicaciones innecesarias y enfócate en los resultados y el tiempo invertido.
 
   Aquí están los datos de los commits (formato: Fecha | Autor | Mensaje):
   ---
