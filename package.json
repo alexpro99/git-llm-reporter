@@ -3,12 +3,12 @@
   "version": "1.0.0",
   "description": "Genera reportes de trabajo usando Git y Gemini",
   "type": "module",
-  "main": "generate-report.js",
+  "main": "src/app.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "bin": {
-    "gitreport": "generate-report.js"
+    "gitreport": "cli/index.js"
   },
   "keywords": [
     "git",
