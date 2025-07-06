@@ -1,6 +1,13 @@
 import dotenv from "dotenv";
-import { getCommitLogs, getCommitLogsByBranch, getCommitDiff } from "./services/gitService.js";
-import { generateReportWithAI, generateDeepDiveReport } from "./services/aiService.js";
+import {
+  getCommitLogs,
+  getCommitLogsByBranch,
+  getCommitDiff,
+} from "./services/gitService.js";
+import {
+  generateReportWithAI,
+  generateDeepDiveReport,
+} from "./services/aiService.js";
 import { parseArgs } from "./utils/argsParser.js";
 
 dotenv.config();
@@ -22,24 +29,38 @@ const showHelp = () => {
     --deep-dive         Realiza un análisis profundo del código en cada commit.
     --chunk-size        Tamaño de los chunks para el análisis profundo (por defecto: 5).
   `);
-}
+};
 
 async function getCommits(branch, days, commitRange) {
   if (branch) {
-    console.log(`Obteniendo logs para la rama '${branch}' de los últimos ${days} días...`);
+    console.log(
+      `Obteniendo logs para la rama '${branch}' de los últimos ${days} días...`
+    );
     return getCommitLogsByBranch(branch, days);
   }
   if (commitRange) {
     console.log(`Obteniendo logs para el rango: ${commitRange}...`);
     return getCommitLogs(commitRange);
   }
-  console.error("Debes proporcionar un rango de commits o una rama. Usa -h para ver la ayuda.");
+  console.error(
+    "Debes proporcionar un rango de commits o una rama. Usa -h para ver la ayuda."
+  );
   process.exit(1);
 }
 
 export async function run() {
   const args = process.argv.slice(2);
-  const { commitRange, verbose, modelName, help, branch, days, reportType, deepDive, chunkSize } = parseArgs(args);
+  const {
+    commitRange,
+    verbose,
+    modelName,
+    help,
+    branch,
+    days,
+    reportType,
+    deepDive,
+    chunkSize,
+  } = parseArgs(args);
 
   if (help) {
     showHelp();
@@ -71,7 +92,9 @@ export async function run() {
 
       report = await generateDeepDiveReport(chunks, modelName);
     } else {
-      console.log(`Logs obtenidos. Enviando a ${modelName} para generar el reporte...`);
+      console.log(
+        `Logs obtenidos. Enviando a ${modelName} para generar el reporte...`
+      );
       report = await generateReportWithAI(commits, modelName, reportType);
     }
 
