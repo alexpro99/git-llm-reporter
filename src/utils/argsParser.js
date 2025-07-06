@@ -12,5 +12,8 @@ export function parseArgs(args) {
   const daysIndex = args.findIndex(arg => arg === '-d' || arg === '--days');
   const days = daysIndex !== -1 && args[daysIndex + 1] ? parseInt(args[daysIndex + 1], 10) : 7;
 
-  return { commitRange, verbose, modelName, help, branch, days };
+  const reportTypeIndex = args.findIndex(arg => arg === '--report-type');
+  const reportType = reportTypeIndex !== -1 && args[reportTypeIndex + 1] ? args[reportTypeIndex + 1] : 'summary';
+
+  return { commitRange, verbose, modelName, help, branch, days, reportType };
 }

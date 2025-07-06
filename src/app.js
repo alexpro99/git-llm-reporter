@@ -18,12 +18,13 @@ const showHelp = () => {
     -m, --model         Especifica el modelo de IA a usar. Por defecto: gemini-1.5-pro.
     -b, --branch        Especifica la rama para obtener los commits.
     -d, --days          Número de días hacia atrás para obtener los commits (por defecto: 7).
+    --report-type       Tipo de reporte a generar ('summary' o 'personal'). Por defecto: 'summary'.
   `);
 }
 
 export async function run() {
   const args = process.argv.slice(2);
-  const { commitRange, verbose, modelName, help, branch, days } = parseArgs(args);
+  const { commitRange, verbose, modelName, help, branch, days, reportType } = parseArgs(args);
 
   if (help) {
     showHelp();
@@ -48,7 +49,7 @@ export async function run() {
 
   if (commits) {
     console.log(`Logs obtenidos. Enviando a ${modelName} para generar el reporte...`);
-    const report = await generateReportWithAI(commits, modelName);
+    const report = await generateReportWithAI(commits, modelName, reportType);
 
     if (report) {
       console.log("\n--- INICIO DEL REPORTE ---\n");
