@@ -21,7 +21,7 @@ const getSummaryPrompt = (commitData) => `
   Responde SOLAMENTE con el reporte, no incluyas explicaciones adicionales.
 `;
 
-const getTechnicalPrompt = (commitData) => `
+const getPersonalPrompt = (commitData) => `
   Eres un desarrollador que debe entregar un reporte técnico y conciso a su jefe sobre el trabajo realizado, basado en los logs de commits.
 
   Genera un reporte que incluya:
@@ -41,13 +41,18 @@ const getTechnicalPrompt = (commitData) => `
   Responde SOLAMENTE con el reporte, no incluyas explicaciones adicionales.
 `;
 
-export async function generateReportWithAI(commitData, modelName = "gemini-1.5-pro", reportType = "summary") {
+export async function generateReportWithAI(
+  commitData,
+  modelName = "gemini-1.5-pro",
+  reportType = "summary"
+) {
   const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
   const model = genAI.getGenerativeModel({ model: modelName });
 
-  const prompt = reportType === 'personal'
-    ? getPersonalPrompt(commitData)
-    : getSummaryPrompt(commitData);
+  const prompt =
+    reportType === "personal"
+      ? getPersonalPrompt(commitData)
+      : getSummaryPrompt(commitData);
 
   try {
     const result = await model.generateContent(prompt);
