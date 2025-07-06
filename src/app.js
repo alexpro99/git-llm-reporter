@@ -1,6 +1,6 @@
 import dotenv from "dotenv";
-import { getCommitLogs, getCommitLogsByBranch } from "./services/gitService.js";
-import { generateReportWithAI } from "./services/aiService.js";
+import { getCommitLogs, getCommitLogsByBranch, getCommitDiff } from "./services/gitService.js";
+import { generateReportWithAI, generateDeepDiveReport } from "./services/aiService.js";
 import { parseArgs } from "./utils/argsParser.js";
 
 dotenv.config();
@@ -19,42 +19,68 @@ const showHelp = () => {
     -b, --branch        Especifica la rama para obtener los commits.
     -d, --days          Número de días hacia atrás para obtener los commits (por defecto: 7).
     --report-type       Tipo de reporte a generar ('summary' o 'personal'). Por defecto: 'summary'.
+    --deep-dive         Realiza un análisis profundo del código en cada commit.
+    --chunk-size        Tamaño de los chunks para el análisis profundo (por defecto: 5).
   `);
+}
+
+async function getCommits(branch, days, commitRange) {
+  if (branch) {
+    console.log(`Obteniendo logs para la rama '${branch}' de los últimos ${days} días...`);
+    return getCommitLogsByBranch(branch, days);
+  }
+  if (commitRange) {
+    console.log(`Obteniendo logs para el rango: ${commitRange}...`);
+    return getCommitLogs(commitRange);
+  }
+  console.error("Debes proporcionar un rango de commits o una rama. Usa -h para ver la ayuda.");
+  process.exit(1);
 }
 
 export async function run() {
   const args = process.argv.slice(2);
-  const { commitRange, verbose, modelName, help, branch, days, reportType } = parseArgs(args);
+  const { commitRange, verbose, modelName, help, branch, days, reportType, deepDive, chunkSize } = parseArgs(args);
 
   if (help) {
     showHelp();
     process.exit(0);
   }
 
-  let commits;
-  if (branch) {
-    console.log(`Obteniendo logs para la rama '${branch}' de los últimos ${days} días...`);
-    commits = await getCommitLogsByBranch(branch, days);
-  } else if (commitRange) {
-    console.log(`Obteniendo logs para el rango: ${commitRange}...`);
-    commits = await getCommitLogs(commitRange);
-  } else {
-    console.error("Debes proporcionar un rango de commits o una rama. Usa -h para ver la ayuda.");
-    process.exit(1);
-  }
+  const commits = await getCommits(branch, days, commitRange);
 
   if (verbose) {
-    console.log(`Commits obtenidos: ${commits}\n`);
+    console.log(`Commits obtenidos: ${JSON.stringify(commits, null, 2)}\n`);
   }
 
-  if (commits) {
-    console.log(`Logs obtenidos. Enviando a ${modelName} para generar el reporte...`);
-    const report = await generateReportWithAI(commits, modelName, reportType);
+  if (commits && commits.length > 0) {
+    let report;
+    if (deepDive) {
+      console.log("Iniciando análisis profundo de commits...");
+      const commitsWithDiffs = [];
+      for (const commit of commits) {
+        const diff = await getCommitDiff(commit.hash);
+        if (diff) {
+          commitsWithDiffs.push({ ...commit, diff });
+        }
+      }
+
+      const chunks = [];
+      for (let i = 0; i < commitsWithDiffs.length; i += chunkSize) {
+        chunks.push(commitsWithDiffs.slice(i, i + chunkSize));
+      }
+
+      report = await generateDeepDiveReport(chunks, modelName);
+    } else {
+      console.log(`Logs obtenidos. Enviando a ${modelName} para generar el reporte...`);
+      report = await generateReportWithAI(commits, modelName, reportType);
+    }
 
     if (report) {
       console.log("\n--- INICIO DEL REPORTE ---\n");
       console.log(report);
       console.log("\n--- FIN DEL REPORTE ---\n");
     }
+  } else {
+    console.log("No se encontraron commits para analizar.");
   }
 }

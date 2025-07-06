@@ -1,23 +1,20 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+
 const getSummaryPrompt = (commitData) => `
   Eres un Tech Lead encargado de generar un reporte de trabajo semanal a partir de logs de commits. Tu objetivo es analizar la información proporcionada y crear un resumen claro, bien estructurado y profesional.
-
   Basado en los siguientes commits, genera un reporte de trabajo que incluya:
   1. Un título y una breve introducción sobre el objetivo del trabajo realizado.
   2. Una sección de "Análisis de Contribuciones por Desarrollador".
   3. Para cada desarrollador, agrupa sus commits y describe el trabajo realizado.
   4. Añade una sección de "Observaciones" para cada desarrollador si encuentras patrones interesantes.
   5. Finalmente, crea una sección de "Estimación de Tiempo de Desarrollo" con las horas aproximadas dedicadas por cada desarrollador.
-
-  Utiliza un tono profesional y asegúrate de que el reporte sea fácil de leer y entender.
-  No seas condescendiente con los desarrolladores, se totalmente imparcial y objetivo.
-
+  Utiliza un tono profesional y asegúrate de que el reporte sea fácil de leer y entender. No seas condescendiente con los desarrolladores, se totalmente imparcial y objetivo.
   Aquí están los datos de los commits (formato: Fecha | Autor | Mensaje):
   ---
   ${commitData}
   ---
-
   Responde SOLAMENTE con el reporte, no incluyas explicaciones adicionales.
 `;
 
@@ -41,25 +38,82 @@ const getPersonalPrompt = (commitData) => `
   Responde SOLAMENTE con el reporte, no incluyas explicaciones adicionales.
 `;
 
-export async function generateReportWithAI(
-  commitData,
-  modelName = "gemini-1.5-pro",
-  reportType = "summary"
-) {
-  const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+const getChunkAnalysisPrompt = (chunk) => `
+  Eres un experto en análisis de código y estás revisando un conjunto de commits. Tu tarea es analizar el siguiente bloque de commits, incluyendo sus mensajes y los cambios de código (diffs), para entender qué se hizo realmente.
+  Extrae la siguiente información:
+  - **Resumen Técnico:** Describe en detalle los cambios técnicos realizados. Menciona archivos modificados, funciones agregadas o eliminadas, y la lógica principal implementada.
+  - **Funcionalidad Afectada:** Identifica qué partes de la aplicación o qué funcionalidades se vieron afectadas por estos cambios.
+  - **Posibles Mejoras o Riesgos:** Si observas alguna área que podría mejorarse, o algún riesgo potencial introducido por el código, anótalo.
+
+  Aquí está el chunk de commits y diffs:
+  ---
+  ${chunk}
+  ---
+  Proporciona un análisis conciso y técnico. No incluyas información superflua.
+`;
+
+const getFinalReportPrompt = (analyses) => `
+  Eres un Arquitecto de Software y has recibido análisis de varios bloques de commits. Tu misión es consolidar estos análisis en un único reporte de "Análisis Profundo" que ofrezca una visión completa y coherente del trabajo realizado.
+  Utiliza los siguientes análisis de chunks para generar el reporte final:
+  ---
+  ${analyses.join('\n\n---\n\n')}
+  ---
+  El reporte final debe tener la siguiente estructura:
+  1.  **Título:** "Reporte de Análisis Profundo de Commits"
+  2.  **Resumen Ejecutivo:** Una breve descripción de alto nivel de los cambios más significativos y el impacto general en el proyecto.
+  3.  **Análisis Detallado por Módulo/Funcionalidad:** Agrupa los cambios por las áreas del sistema que fueron afectadas (ej. "Módulo de Autenticación", "Refactorización del Servicio de Pagos"). Para cada área, describe los cambios técnicos y funcionales.
+  4.  **Observaciones y Recomendaciones:** Basado en el análisis completo, proporciona observaciones sobre la calidad del código, patrones recurrentes y recomendaciones para futuras mejoras o áreas que requieren atención.
+
+  Sé claro, estructurado y proporciona una visión que sea útil tanto para desarrolladores como para la gestión técnica.
+`;
+
+async function generateWithAI(prompt, modelName) {
   const model = genAI.getGenerativeModel({ model: modelName });
-
-  const prompt =
-    reportType === "personal"
-      ? getPersonalPrompt(commitData)
-      : getSummaryPrompt(commitData);
-
   try {
     const result = await model.generateContent(prompt);
     const response = await result.response;
     return response.text();
   } catch (error) {
-    console.error("Error al generar el reporte con la IA:", error);
+    console.error("Error al generar contenido con la IA:", error);
     return null;
   }
+}
+
+export async function generateReportWithAI(commitData, modelName = "gemini-1.5-pro", reportType = "summary") {
+  const formattedCommits = commitData
+    .map(c => `${c.date} | ${c.author} | ${c.message}`)
+    .join("\n");
+
+  const prompt = reportType === 'personal'
+    ? getPersonalPrompt(formattedCommits)
+    : getSummaryPrompt(formattedCommits);
+
+  return generateWithAI(prompt, modelName);
+}
+
+export async function generateDeepDiveReport(chunks, modelName) {
+  console.log(`Analizando ${chunks.length} chunks de commits...`);
+  const analyses = [];
+
+  for (let i = 0; i < chunks.length; i++) {
+    console.log(`Analizando chunk ${i + 1}/${chunks.length}...`);
+    const chunkContent = chunks[i]
+      .map(c => `Commit: ${c.hash}\nAuthor: ${c.author}\nDate: ${c.date}\nMessage: ${c.message}\n\nDiff:\n${c.diff}\n---`)
+      .join('\n');
+    
+    const analysisPrompt = getChunkAnalysisPrompt(chunkContent);
+    const analysis = await generateWithAI(analysisPrompt, modelName);
+    if (analysis) {
+      analyses.push(analysis);
+    }
+  }
+
+  if (analyses.length === 0) {
+    console.error("No se pudo generar ningún análisis de los chunks.");
+    return null;
+  }
+
+  console.log("Generando el reporte final consolidado...");
+  const finalReportPrompt = getFinalReportPrompt(analyses);
+  return generateWithAI(finalReportPrompt, modelName);
 }
