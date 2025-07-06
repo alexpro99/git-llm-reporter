@@ -50,9 +50,7 @@ export async function getCommitLogsByBranch(branch, days) {
       return null;
     }
 
-    const formattedCommits = log.all
-      .map((c) => `${c.date} | ${c.author_name} | ${c.message}`)
-      .join("\n");
+    const formattedCommits = log.all[0].hash
     return formattedCommits;
   } catch (error) {
     console.error("Error al obtener los logs de Git:", error);
