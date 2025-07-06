@@ -31,3 +31,31 @@ export async function getCommitLogs(range) {
     return null;
   }
 }
+
+export async function getCommitLogsByBranch(branch, days) {
+  const git = simpleGit();
+  const since = new Date();
+  since.setDate(since.getDate() - days);
+
+  try {
+    const log = await git.log([
+      branch,
+      `--since=${since.toISOString()}`,
+      "--pretty=format:%ad || %an || %s",
+      "--date=iso",
+    ]);
+
+    if (!log.all || log.all.length === 0) {
+      console.log(`No se encontraron commits en la rama ${branch} en los últimos ${days} días.`);
+      return null;
+    }
+
+    const formattedCommits = log.all
+      .map((c) => `${c.date} | ${c.author_name} | ${c.message}`)
+      .join("\n");
+    return formattedCommits;
+  } catch (error) {
+    console.error("Error al obtener los logs de Git:", error);
+    return null;
+  }
+}
