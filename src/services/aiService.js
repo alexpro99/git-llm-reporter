@@ -42,6 +42,7 @@ const getChunkAnalysisPrompt = (chunk) => `
   - **Resumen Técnico:** Describe en detalle los cambios técnicos realizados. Menciona archivos modificados, funciones agregadas o eliminadas, y la lógica principal implementada.
   - **Funcionalidad Afectada:** Identifica qué partes de la aplicación o qué funcionalidades se vieron afectadas por estos cambios.
   - **Posibles Mejoras o Riesgos:** Si observas alguna área que podría mejorarse, o algún riesgo potencial introducido por el código, anótalo.
+  - **Participantes Clave:** Menciona a los desarrolladores que realizaron los cambios más significativos.
 
   Aquí está el chunk de commits y diffs:
   ---
@@ -61,6 +62,7 @@ const getFinalReportPrompt = (analyses) => `
   2.  **Resumen Ejecutivo:** Una breve descripción de alto nivel de los cambios más significativos y el impacto general en el proyecto.
   3.  **Análisis Detallado por Módulo/Funcionalidad:** Agrupa los cambios por las áreas del sistema que fueron afectadas (ej. "Módulo de Autenticación", "Refactorización del Servicio de Pagos"). Para cada área, describe los cambios técnicos y funcionales.
   4.  **Observaciones y Recomendaciones:** Basado en el análisis completo, proporciona observaciones sobre la calidad del código, patrones recurrentes y recomendaciones para futuras mejoras o áreas que requieren atención.
+  5.  **Sección de Participantes:** Un resumen con estimación horaria de los desarrolladores involucrados en los cambios.
 
   Sé claro, estructurado y proporciona una visión que sea útil tanto para desarrolladores como para la gestión técnica.
 `;
@@ -112,6 +114,9 @@ export async function generateDeepDiveReport(chunks, modelName) {
     const analysisPrompt = getChunkAnalysisPrompt(chunkContent);
     const analysis = await generateWithAI(analysisPrompt, modelName);
     if (analysis) {
+      console.log(`--- Inicio chunk ${i + 1} --- \n`);
+      console.log(analysis);
+      console.log(`--- Fin chunk ${i + 1} --- \n`);
       analyses.push(analysis);
     }
   }
