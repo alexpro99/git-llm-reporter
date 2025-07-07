@@ -4,33 +4,33 @@ import { ChatOllama } from "@langchain/ollama";
 
 // --- Fábrica de Modelos ---
 function createAiModel(provider, modelName) {
-  if (process.env.E2E_TEST_MOCK_AI === 'true') {
+  if (process.env.E2E_TEST_MOCK_AI === "true") {
     // En pruebas E2E, devolvemos un objeto simulado que imita la interfaz de LangChain.
     return {
       invoke: async (messages) => {
         const content = messages[0].content;
-        if (content.includes('Eres un Tech Lead')) {
-          return { content: 'Mocked Summary Report' };
+        if (content.includes("Eres un Tech Lead")) {
+          return { content: "Mocked Summary Report" };
         }
-        if (content.includes('Eres un desarrollador')) {
-          return { content: 'Mocked Personal Report' };
+        if (content.includes("Eres un desarrollador")) {
+          return { content: "Mocked Personal Report" };
         }
-        return { content: 'Mocked AI Response' };
-      }
+        return { content: "Mocked AI Response" };
+      },
     };
   }
 
   switch (provider) {
-    case 'ollama':
+    case "ollama":
       return new ChatOllama({
         baseUrl: process.env.OLLAMA_BASE_URL || "http://localhost:11434",
         model: modelName,
       });
-    case 'gemini':
+    case "gemini":
     default:
       return new ChatGoogleGenerativeAI({
         apiKey: process.env.GEMINI_API_KEY,
-        modelName,
+        model: modelName,
       });
   }
 }
@@ -48,6 +48,8 @@ const getSummaryPrompt = (commitData) => `
   Aquí están los datos de los commits (formato: Fecha | Autor | Mensaje):
   ${commitData}
   ---
+
+  Responde SOLAMENTE con el reporte, no incluyas explicaciones adicionales.
 `;
 const getPersonalPrompt = (commitData) => `
   Eres un desarrollador que debe entregar un reporte técnico y conciso a su jefe sobre el trabajo realizado, basado en los logs de commits.
@@ -64,6 +66,8 @@ const getPersonalPrompt = (commitData) => `
   Aquí están los datos de los commits (formato: Fecha | Autor | Mensaje):
   ${commitData}
   ---
+
+  Responde SOLAMENTE con el reporte, no incluyas explicaciones adicionales.
 `;
 const getChunkAnalysisPrompt = (chunk) => `
   Eres un experto en análisis de código y estás revisando un conjunto de commits. Tu tarea es analizar el siguiente bloque de commits, incluyendo sus mensajes y los cambios de código (diffs), para entender qué se hizo realmente.
@@ -76,6 +80,8 @@ const getChunkAnalysisPrompt = (chunk) => `
   Aquí está el chunk de commits y diffs:
   ${chunk}
   ---
+
+  Responde SOLAMENTE con el reporte, no incluyas explicaciones adicionales.
 `;
 const getFinalReportPrompt = (analyses) => `
   Eres un Arquitecto de Software y has recibido análisis de varios bloques de commits. Tu misión es consolidar estos análisis en un único reporte de "Análisis Profundo" que ofrezca una visión completa y coherente del trabajo realizado.
@@ -90,6 +96,7 @@ const getFinalReportPrompt = (analyses) => `
   5.  **Sección de Participantes:** Un resumen con estimación horaria de los desarrolladores involucrados en los cambios.
 
   Sé claro, estructurado y proporciona una visión que sea útil tanto para desarrolladores como para la gestión técnica.
+  Responde SOLAMENTE con el reporte, no incluyas explicaciones adicionales.
 `;
 
 // --- Funciones Principales Refactorizadas ---
@@ -110,6 +117,7 @@ export async function generateReportWithAI({
   reportType = "summary",
 }) {
   const model = createAiModel(provider, modelName);
+
   const formattedCommits = commitData
     .map((c) => `${c.date} | ${c.author} | ${c.message}`)
     .join("\n");
@@ -124,7 +132,9 @@ export async function generateReportWithAI({
 
 export async function generateDeepDiveReport({ chunks, provider, modelName }) {
   const model = createAiModel(provider, modelName);
-  console.log(`Analizando ${chunks.length} chunks de commits con ${provider}...`);
+  console.log(
+    `Analizando ${chunks.length} chunks de commits con ${provider}...`
+  );
   const analyses = [];
 
   for (let i = 0; i < chunks.length; i++) {
