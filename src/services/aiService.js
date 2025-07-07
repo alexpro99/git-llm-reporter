@@ -1,7 +1,5 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-
 const getSummaryPrompt = (commitData) => `
   Eres un Tech Lead encargado de generar un reporte de trabajo semanal a partir de logs de commits. Tu objetivo es analizar la información proporcionada y crear un resumen claro, bien estructurado y profesional.
   Basado en los siguientes commits, genera un reporte de trabajo que incluya:
@@ -56,7 +54,7 @@ const getFinalReportPrompt = (analyses) => `
   Eres un Arquitecto de Software y has recibido análisis de varios bloques de commits. Tu misión es consolidar estos análisis en un único reporte de "Análisis Profundo" que ofrezca una visión completa y coherente del trabajo realizado.
   Utiliza los siguientes análisis de chunks para generar el reporte final:
   ---
-  ${analyses.join('\n\n---\n\n')}
+  ${analyses.join("\n\n---\n\n")}
   ---
   El reporte final debe tener la siguiente estructura:
   1.  **Título:** "Reporte de Análisis Profundo de Commits"
@@ -68,6 +66,8 @@ const getFinalReportPrompt = (analyses) => `
 `;
 
 async function generateWithAI(prompt, modelName) {
+  const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+
   const model = genAI.getGenerativeModel({ model: modelName });
   try {
     const result = await model.generateContent(prompt);
@@ -79,14 +79,19 @@ async function generateWithAI(prompt, modelName) {
   }
 }
 
-export async function generateReportWithAI(commitData, modelName = "gemini-1.5-pro", reportType = "summary") {
+export async function generateReportWithAI(
+  commitData,
+  modelName = "gemini-2.5-pro",
+  reportType = "summary"
+) {
   const formattedCommits = commitData
-    .map(c => `${c.date} | ${c.author} | ${c.message}`)
+    .map((c) => `${c.date} | ${c.author} | ${c.message}`)
     .join("\n");
 
-  const prompt = reportType === 'personal'
-    ? getPersonalPrompt(formattedCommits)
-    : getSummaryPrompt(formattedCommits);
+  const prompt =
+    reportType === "personal"
+      ? getPersonalPrompt(formattedCommits)
+      : getSummaryPrompt(formattedCommits);
 
   return generateWithAI(prompt, modelName);
 }
@@ -98,9 +103,12 @@ export async function generateDeepDiveReport(chunks, modelName) {
   for (let i = 0; i < chunks.length; i++) {
     console.log(`Analizando chunk ${i + 1}/${chunks.length}...`);
     const chunkContent = chunks[i]
-      .map(c => `Commit: ${c.hash}\nAuthor: ${c.author}\nDate: ${c.date}\nMessage: ${c.message}\n\nDiff:\n${c.diff}\n---`)
-      .join('\n');
-    
+      .map(
+        (c) =>
+          `Commit: ${c.hash}\nAuthor: ${c.author}\nDate: ${c.date}\nMessage: ${c.message}\n\nDiff:\n${c.diff}\n---`
+      )
+      .join("\n");
+
     const analysisPrompt = getChunkAnalysisPrompt(chunkContent);
     const analysis = await generateWithAI(analysisPrompt, modelName);
     if (analysis) {
