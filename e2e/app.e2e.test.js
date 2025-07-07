@@ -61,13 +61,13 @@ describe('End-to-End Test', () => {
     rmSync(TEST_REPO_PATH, { recursive: true, force: true });
   });
 
-  it('should generate a summary report for a commit range', async () => {
-    const { stdout } = await runCli('HEAD~1..HEAD');
+  it('should generate a summary report using gemini provider', async () => {
+    const { stdout } = await runCli('HEAD~1..HEAD --provider gemini');
     expect(stdout).toContain('Mocked Summary Report');
   });
 
-  it('should generate a personal report when --report-type is personal', async () => {
-    const { stdout } = await runCli('HEAD~1..HEAD --report-type personal');
+  it('should generate a personal report using ollama provider', async () => {
+    const { stdout } = await runCli('HEAD~1..HEAD --provider ollama --report-type personal');
     expect(stdout).toContain('Mocked Personal Report');
   });
 });
