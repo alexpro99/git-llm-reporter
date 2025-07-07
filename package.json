@@ -5,7 +5,7 @@
   "type": "module",
   "main": "src/app.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js"
   },
   "bin": {
     "gitreport": "cli/index.js"
@@ -31,5 +31,8 @@
     "@google/generative-ai": "^0.24.1",
     "dotenv": "^17.0.1",
     "simple-git": "^3.28.0"
+  },
+  "devDependencies": {
+    "jest": "^30.0.4"
   }
 }
