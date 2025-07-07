@@ -3,7 +3,7 @@ import { HumanMessage } from "@langchain/core/messages";
 import { ChatOllama } from "@langchain/ollama";
 
 // --- Fábrica de Modelos ---
-function createAiModel(provider, modelName) {
+function createAiModel(provider = process.env.DEFAULT_PROVIDER, modelName) {
   if (process.env.E2E_TEST_MOCK_AI === "true") {
     // En pruebas E2E, devolvemos un objeto simulado que imita la interfaz de LangChain.
     return {
@@ -86,8 +86,11 @@ const getChunkAnalysisPrompt = (chunk) => `
 const getFinalReportPrompt = (analyses) => `
   Eres un Arquitecto de Software y has recibido análisis de varios bloques de commits. Tu misión es consolidar estos análisis en un único reporte de "Análisis Profundo" que ofrezca una visión completa y coherente del trabajo realizado.
   Utiliza los siguientes análisis de chunks para generar el reporte final:
+
+  ---
   ${analyses.join("\n\n---\n\n")}
   ---
+
   El reporte final debe tener la siguiente estructura:
   1.  **Título:** "Reporte de Análisis Profundo de Commits"
   2.  **Resumen Ejecutivo:** Una breve descripción de alto nivel de los cambios más significativos y el impacto general en el proyecto.
@@ -133,7 +136,7 @@ export async function generateReportWithAI({
 export async function generateDeepDiveReport({ chunks, provider, modelName }) {
   const model = createAiModel(provider, modelName);
   console.log(
-    `Analizando ${chunks.length} chunks de commits con ${provider}...`
+    `Analizando ${chunks.length} chunks de commits con ${provider}/${modelName}...`
   );
   const analyses = [];
 
