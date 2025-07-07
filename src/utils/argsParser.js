@@ -19,5 +19,8 @@ export function parseArgs(args) {
   const chunkSizeIndex = args.findIndex(arg => arg === '--chunk-size');
   const chunkSize = chunkSizeIndex !== -1 && args[chunkSizeIndex + 1] ? parseInt(args[chunkSizeIndex + 1], 10) : (process.env.CHUNK_SIZE || 5);
 
-  return { commitRange, verbose, modelName, help, branch, days, reportType, deepDive, chunkSize };
+  const providerIndex = args.findIndex(arg => arg === '--provider');
+  const provider = providerIndex !== -1 && args[providerIndex + 1] ? args[providerIndex + 1] : 'gemini';
+
+  return { commitRange, verbose, modelName, help, branch, days, reportType, deepDive, chunkSize, provider };
 }

@@ -28,6 +28,7 @@ const showHelp = () => {
     --report-type       Tipo de reporte a generar ('summary' o 'personal'). Por defecto: 'summary'.
     --deep-dive         Realiza un análisis profundo del código en cada commit.
     --chunk-size        Tamaño de los chunks para el análisis profundo (por defecto: 5).
+    --provider          Proveedor de IA a usar ('gemini' o 'ollama'). Por defecto: 'gemini'.
   `);
 };
 
@@ -60,6 +61,7 @@ export async function run() {
     reportType,
     deepDive,
     chunkSize,
+    provider,
   } = parseArgs(args);
 
   if (help) {
@@ -70,7 +72,8 @@ export async function run() {
   const commits = await getCommits(branch, days, commitRange);
 
   if (verbose) {
-    console.log(`Commits obtenidos: ${JSON.stringify(commits, null, 2)}\n`);
+    console.log(`Commits obtenidos: ${JSON.stringify(commits, null, 2)}
+`);
   }
 
   if (commits && commits.length > 0) {
@@ -90,12 +93,17 @@ export async function run() {
         chunks.push(commitsWithDiffs.slice(i, i + chunkSize));
       }
 
-      report = await generateDeepDiveReport(chunks, modelName);
+      report = await generateDeepDiveReport({ chunks, provider, modelName });
     } else {
       console.log(
-        `Logs obtenidos. Enviando a ${modelName} para generar el reporte...`
+        `Logs obtenidos. Enviando a ${provider}/${modelName} para generar el reporte...`
       );
-      report = await generateReportWithAI(commits, modelName, reportType);
+      report = await generateReportWithAI({
+        commitData: commits,
+        provider,
+        modelName,
+        reportType,
+      });
     }
 
     if (report) {

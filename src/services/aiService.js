@@ -1,5 +1,41 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import { ChatGoogleGenerativeAI } from "@langchain/google-genai";
+import { HumanMessage } from "@langchain/core/messages";
+import { ChatOllama } from "@langchain/ollama";
 
+// --- Fábrica de Modelos ---
+function createAiModel(provider, modelName) {
+  if (process.env.E2E_TEST_MOCK_AI === 'true') {
+    // En pruebas E2E, devolvemos un objeto simulado que imita la interfaz de LangChain.
+    return {
+      invoke: async (messages) => {
+        const content = messages[0].content;
+        if (content.includes('Eres un Tech Lead')) {
+          return { content: 'Mocked Summary Report' };
+        }
+        if (content.includes('Eres un desarrollador')) {
+          return { content: 'Mocked Personal Report' };
+        }
+        return { content: 'Mocked AI Response' };
+      }
+    };
+  }
+
+  switch (provider) {
+    case 'ollama':
+      return new ChatOllama({
+        baseUrl: process.env.OLLAMA_BASE_URL || "http://localhost:11434",
+        model: modelName,
+      });
+    case 'gemini':
+    default:
+      return new ChatGoogleGenerativeAI({
+        apiKey: process.env.GEMINI_API_KEY,
+        modelName,
+      });
+  }
+}
+
+// --- Lógica de Prompts (sin cambios) ---
 const getSummaryPrompt = (commitData) => `
   Eres un Tech Lead encargado de generar un reporte de trabajo semanal a partir de logs de commits. Tu objetivo es analizar la información proporcionada y crear un resumen claro, bien estructurado y profesional.
   Basado en los siguientes commits, genera un reporte de trabajo que incluya:
@@ -10,12 +46,9 @@ const getSummaryPrompt = (commitData) => `
   5. Finalmente, crea una sección de "Estimación de Tiempo de Desarrollo" con las horas aproximadas dedicadas por cada desarrollador.
   Utiliza un tono profesional y asegúrate de que el reporte sea fácil de leer y entender. No seas condescendiente con los desarrolladores, se totalmente imparcial y objetivo.
   Aquí están los datos de los commits (formato: Fecha | Autor | Mensaje):
-  ---
   ${commitData}
   ---
-  Responde SOLAMENTE con el reporte, no incluyas explicaciones adicionales.
 `;
-
 const getPersonalPrompt = (commitData) => `
   Eres un desarrollador que debe entregar un reporte técnico y conciso a su jefe sobre el trabajo realizado, basado en los logs de commits.
 
@@ -29,13 +62,9 @@ const getPersonalPrompt = (commitData) => `
   El reporte debe ser directo, profesional y útil para la supervisión técnica. Evita explicaciones innecesarias y enfócate en los resultados y el tiempo invertido.
 
   Aquí están los datos de los commits (formato: Fecha | Autor | Mensaje):
-  ---
   ${commitData}
   ---
-
-  Responde SOLAMENTE con el reporte, no incluyas explicaciones adicionales.
 `;
-
 const getChunkAnalysisPrompt = (chunk) => `
   Eres un experto en análisis de código y estás revisando un conjunto de commits. Tu tarea es analizar el siguiente bloque de commits, incluyendo sus mensajes y los cambios de código (diffs), para entender qué se hizo realmente.
   Extrae la siguiente información:
@@ -45,16 +74,12 @@ const getChunkAnalysisPrompt = (chunk) => `
   - **Participantes Clave:** Menciona a los desarrolladores que realizaron los cambios más significativos.
 
   Aquí está el chunk de commits y diffs:
-  ---
   ${chunk}
   ---
-  Proporciona un análisis conciso y técnico. No incluyas información superflua.
 `;
-
 const getFinalReportPrompt = (analyses) => `
   Eres un Arquitecto de Software y has recibido análisis de varios bloques de commits. Tu misión es consolidar estos análisis en un único reporte de "Análisis Profundo" que ofrezca una visión completa y coherente del trabajo realizado.
   Utiliza los siguientes análisis de chunks para generar el reporte final:
-  ---
   ${analyses.join("\n\n---\n\n")}
   ---
   El reporte final debe tener la siguiente estructura:
@@ -67,35 +92,24 @@ const getFinalReportPrompt = (analyses) => `
   Sé claro, estructurado y proporciona una visión que sea útil tanto para desarrolladores como para la gestión técnica.
 `;
 
-async function generateWithAI(prompt, modelName) {
-  if (process.env.E2E_TEST_MOCK_AI === 'true') {
-    if (prompt.includes('Eres un Tech Lead')) {
-      return Promise.resolve('Mocked Summary Report');
-    }
-    if (prompt.includes('Eres un desarrollador')) {
-        return Promise.resolve('Mocked Personal Report');
-    }
-    return Promise.resolve('Mocked AI Response');
-  }
-
-  const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-
-  const model = genAI.getGenerativeModel({ model: modelName });
+// --- Funciones Principales Refactorizadas ---
+async function generateWithAI(model, prompt) {
   try {
-    const result = await model.generateContent(prompt);
-    const response = await result.response;
-    return response.text();
+    const result = await model.invoke([new HumanMessage({ content: prompt })]);
+    return result.content;
   } catch (error) {
     console.error("Error al generar contenido con la IA:", error);
     return null;
   }
 }
 
-export async function generateReportWithAI(
+export async function generateReportWithAI({
   commitData,
-  modelName = "gemini-2.5-pro",
-  reportType = "summary"
-) {
+  provider,
+  modelName,
+  reportType = "summary",
+}) {
+  const model = createAiModel(provider, modelName);
   const formattedCommits = commitData
     .map((c) => `${c.date} | ${c.author} | ${c.message}`)
     .join("\n");
@@ -105,11 +119,12 @@ export async function generateReportWithAI(
       ? getPersonalPrompt(formattedCommits)
       : getSummaryPrompt(formattedCommits);
 
-  return generateWithAI(prompt, modelName);
+  return generateWithAI(model, prompt);
 }
 
-export async function generateDeepDiveReport(chunks, modelName) {
-  console.log(`Analizando ${chunks.length} chunks de commits...`);
+export async function generateDeepDiveReport({ chunks, provider, modelName }) {
+  const model = createAiModel(provider, modelName);
+  console.log(`Analizando ${chunks.length} chunks de commits con ${provider}...`);
   const analyses = [];
 
   for (let i = 0; i < chunks.length; i++) {
@@ -122,7 +137,7 @@ export async function generateDeepDiveReport(chunks, modelName) {
       .join("\n");
 
     const analysisPrompt = getChunkAnalysisPrompt(chunkContent);
-    const analysis = await generateWithAI(analysisPrompt, modelName);
+    const analysis = await generateWithAI(model, analysisPrompt);
     if (analysis) {
       console.log(`--- Inicio chunk ${i + 1} --- \n`);
       console.log(analysis);
@@ -138,5 +153,5 @@ export async function generateDeepDiveReport(chunks, modelName) {
 
   console.log("Generando el reporte final consolidado...");
   const finalReportPrompt = getFinalReportPrompt(analyses);
-  return generateWithAI(finalReportPrompt, modelName);
+  return generateWithAI(model, finalReportPrompt);
 }
