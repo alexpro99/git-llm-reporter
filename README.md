@@ -51,7 +51,7 @@ El script se ejecuta desde la línea de comandos, proporcionando un rango de com
 Para generar un reporte, utiliza el siguiente formato:
 
 ```bash
-git-llm-reporter <rango_de_commits>
+gitreport <rango_de_commits>
 ```
 
 El `<rango_de_commits>` sigue la notación estándar de Git: `rama_base..rama_a_comparar`.
@@ -70,7 +70,7 @@ Supongamos que quieres generar un reporte del trabajo realizado en la rama `feat
 2.  Ejecuta el siguiente comando:
 
     ```bash
-    git-llm-reporter main..feature/new-auth
+    gitreport main..feature/new-auth
     ```
 
 3.  El script comenzará a procesar los logs y, después de unos segundos, imprimirá el reporte generado por la IA directamente en tu consola.
