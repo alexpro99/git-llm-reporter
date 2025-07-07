@@ -24,7 +24,7 @@ const showHelp = () => {
     -v, --verbose       Muestra los logs de los commits.
     --provider          Proveedor de IA a usar ('gemini' o 'ollama'). Por defecto: 'gemini'.
     -m, --model         Especifica el modelo de IA a usar.
-                        - Para 'gemini' (por defecto): 'gemini-2.5-pro'.
+                        - Para 'gemini' (por defecto): 'gemini-2.5-flash'.
                         - Para 'ollama': el nombre del modelo que tengas instalado (ej. 'llama3').
     -b, --branch        Especifica la rama para obtener los commits.
     -d, --days          Número de días hacia atrás para obtener los commits (por defecto: 7).
