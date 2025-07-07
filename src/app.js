@@ -14,8 +14,8 @@ dotenv.config();
 
 const showHelp = () => {
   console.log(`
-  Uso: git-llm-reporter <rango-de-commits> [opciones]
-       git-llm-reporter -b <rama> [-d <días>] [opciones]
+  Uso: gitreport <rango-de-commits> [opciones]
+       gitreport -b <rama> [-d <días>] [opciones]
 
   Genera un reporte de un rango de commits o de una rama en los últimos días usando un modelo de IA.
 
