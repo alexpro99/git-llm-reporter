@@ -68,6 +68,16 @@ const getFinalReportPrompt = (analyses) => `
 `;
 
 async function generateWithAI(prompt, modelName) {
+  if (process.env.E2E_TEST_MOCK_AI === 'true') {
+    if (prompt.includes('Eres un Tech Lead')) {
+      return Promise.resolve('Mocked Summary Report');
+    }
+    if (prompt.includes('Eres un desarrollador')) {
+        return Promise.resolve('Mocked Personal Report');
+    }
+    return Promise.resolve('Mocked AI Response');
+  }
+
   const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
   const model = genAI.getGenerativeModel({ model: modelName });

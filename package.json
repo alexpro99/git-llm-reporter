@@ -7,6 +7,12 @@
   "scripts": {
     "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js"
   },
+  "jest": {
+    "testMatch": [
+      "**/src/**/*.test.js",
+      "**/e2e/**/*.test.js"
+    ]
+  },
   "bin": {
     "gitreport": "cli/index.js"
   },

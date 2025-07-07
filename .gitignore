@@ -2,3 +2,4 @@ node_modules
 .env
 guia-tecnica.md
 git-llm-reporter*.tgz
+e2e/test-repo
