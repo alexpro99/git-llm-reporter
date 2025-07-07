@@ -22,7 +22,7 @@ const showHelp = () => {
   Opciones:
     -h, --help          Muestra esta ayuda.
     -v, --verbose       Muestra los logs de los commits.
-    -m, --model         Especifica el modelo de IA a usar. Por defecto: gemini-1.5-pro.
+    -m, --model         Especifica el modelo de IA a usar. Por defecto: gemini-2.5-pro.
     -b, --branch        Especifica la rama para obtener los commits.
     -d, --days          Número de días hacia atrás para obtener los commits (por defecto: 7).
     --report-type       Tipo de reporte a generar ('summary' o 'personal'). Por defecto: 'summary'.

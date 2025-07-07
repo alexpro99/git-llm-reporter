@@ -28,7 +28,7 @@ describe('parseArgs', () => {
   test('should use default model name if not provided', () => {
     const args = [];
     const result = parseArgs(args);
-    expect(result.modelName).toBe('gemini-1.5-pro');
+    expect(result.modelName).toBe('gemini-2.5-pro');
   });
 
   test('should parse branch name', () => {
@@ -80,11 +80,11 @@ describe('parseArgs', () => {
   });
 
   test('should handle a combination of arguments', () => {
-    const args = ['main..develop', '-v', '--model', 'gemini-1.5-pro', '-d', '5'];
+    const args = ['main..develop', '-v', '--model', 'gemini-2.5-pro', '-d', '5'];
     const result = parseArgs(args);
     expect(result.commitRange).toBe('main..develop');
     expect(result.verbose).toBe(true);
-    expect(result.modelName).toBe('gemini-1.5-pro');
+    expect(result.modelName).toBe('gemini-2.5-pro');
     expect(result.days).toBe(5);
   });
 });

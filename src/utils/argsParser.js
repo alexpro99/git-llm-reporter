@@ -5,7 +5,7 @@ export function parseArgs(args) {
   const deepDive = args.includes('--deep-dive');
 
   const modelIndex = args.findIndex(arg => arg === '-m' || arg === '--model');
-  const modelName = modelIndex !== -1 && args[modelIndex + 1] ? args[modelIndex + 1] : "gemini-1.5-pro";
+  const modelName = modelIndex !== -1 && args[modelIndex + 1] ? args[modelIndex + 1] : "gemini-2.5-pro";
 
   const branchIndex = args.findIndex(arg => arg === '-b' || arg === '--branch');
   const branch = branchIndex !== -1 && args[branchIndex + 1] ? args[branchIndex + 1] : null;
