@@ -31,19 +31,20 @@ const showHelp = () => {
     --report-type       Tipo de reporte a generar ('summary' o 'personal'). Por defecto: 'summary'.
     --deep-dive         Realiza un análisis profundo del código en cada commit.
     --chunk-size        Tamaño de los chunks para el análisis profundo (por defecto: 5).
+    --dev-filter        Filtra los commits por un autor específico.
   `);
 };
 
-async function getCommits(branch, days, commitRange) {
+async function getCommits(branch, days, commitRange, devFilter) {
   if (branch) {
     console.log(
       `Obteniendo logs para la rama '${branch}' de los últimos ${days} días...`
     );
-    return getCommitLogsByBranch(branch, days);
+    return getCommitLogsByBranch(branch, days, devFilter);
   }
   if (commitRange) {
     console.log(`Obteniendo logs para el rango: ${commitRange}...`);
-    return getCommitLogs(commitRange);
+    return getCommitLogs(commitRange, devFilter);
   }
   console.error(
     "Debes proporcionar un rango de commits o una rama. Usa -h para ver la ayuda."
@@ -64,6 +65,7 @@ export async function run() {
     deepDive,
     chunkSize,
     provider,
+    devFilter,
   } = parseArgs(args);
 
   if (help) {
@@ -71,7 +73,7 @@ export async function run() {
     process.exit(0);
   }
 
-  const commits = await getCommits(branch, days, commitRange);
+  const commits = await getCommits(branch, days, commitRange, devFilter);
 
   if (verbose) {
     console.log(`Commits obtenidos: ${JSON.stringify(commits, null, 2)}

@@ -40,6 +40,12 @@ export function parseArgs(args) {
       ? args[modelIndex + 1]
       : getDefaultModelNameByProvider(provider);
 
+  const devFilterIndex = args.findIndex((arg) => arg === "--dev-filter");
+  const devFilter =
+    devFilterIndex !== -1 && args[devFilterIndex + 1]
+      ? args[devFilterIndex + 1]
+      : null;
+
   return {
     commitRange,
     verbose,
@@ -51,6 +57,7 @@ export function parseArgs(args) {
     deepDive,
     chunkSize,
     provider,
+    devFilter,
   };
 }
 

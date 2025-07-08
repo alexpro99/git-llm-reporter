@@ -19,7 +19,7 @@ const parseLogOutput = (output) => {
     });
 };
 
-export async function getCommitLogs(range) {
+export async function getCommitLogs(range, devFilter) {
   if (!range) {
     console.error(
       "Error: Debes proporcionar un rango de commits. Ejemplo: 'main..develop'"
@@ -28,12 +28,18 @@ export async function getCommitLogs(range) {
   }
 
   try {
-    const logOutput = await git.raw([
+    const logArgs = [
       "log",
       `${range.split("..")[0]}..${range.split("..")[1]}`,
       GIT_LOG_FORMAT,
       "--date=iso",
-    ]);
+    ];
+
+    if (devFilter) {
+      logArgs.push(`--author=${devFilter}`);
+    }
+
+    const logOutput = await git.raw(logArgs);
 
     const commits = parseLogOutput(logOutput);
     if (commits.length === 0) {
@@ -46,18 +52,24 @@ export async function getCommitLogs(range) {
   }
 }
 
-export async function getCommitLogsByBranch(branch, days) {
+export async function getCommitLogsByBranch(branch, days, devFilter) {
   const since = new Date();
   since.setDate(since.getDate() - days);
 
   try {
-    const logOutput = await git.raw([
+    const logArgs = [
       "log",
       branch,
       `--since=${since.toISOString()}`,
       GIT_LOG_FORMAT,
       "--date=iso",
-    ]);
+    ];
+
+    if (devFilter) {
+      logArgs.push(`--author=${devFilter}`);
+    }
+
+    const logOutput = await git.raw(logArgs);
 
     const commits = parseLogOutput(logOutput);
     if (commits.length === 0) {
