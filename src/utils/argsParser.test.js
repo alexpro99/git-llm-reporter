@@ -87,4 +87,10 @@ describe('parseArgs', () => {
     expect(result.modelName).toBe('gemini-2.5-flash');
     expect(result.days).toBe(5);
   });
+
+  test('should parse dev-filter', () => {
+    const args = ['--dev-filter', 'alexpro99'];
+    const result = parseArgs(args);
+    expect(result.devFilter).toBe('alexpro99');
+  });
 });

@@ -56,6 +56,17 @@ describe('gitService', () => {
       expect(consoleErrorSpy).toHaveBeenCalledWith('Error al obtener los logs de Git:', expect.any(Error));
       consoleErrorSpy.mockRestore();
     });
+
+    it('should filter by author if devFilter is provided', async () => {
+      const mockOutput = `hash1${FIELD_SEPARATOR}2025-07-06T12:00:00Z${FIELD_SEPARATOR}author1${FIELD_SEPARATOR}feat: new feature${RECORD_SEPARATOR}`;
+      git.raw.mockResolvedValue(mockOutput);
+
+      const commits = await getCommitLogs('main..develop', 'author1');
+
+      expect(git.raw).toHaveBeenCalledWith(expect.arrayContaining(['--author=author1']));
+      expect(commits).toHaveLength(1);
+      expect(commits[0].author).toBe('author1');
+    });
   });
 
   describe('getCommitLogsByBranch', () => {
@@ -66,6 +77,19 @@ describe('gitService', () => {
       await getCommitLogsByBranch(branch, days);
 
       expect(git.raw).toHaveBeenCalledWith(expect.arrayContaining(['log', branch, expect.stringMatching(/--since=/)]));
+    });
+
+    it('should filter by author if devFilter is provided', async () => {
+      const branch = 'master';
+      const days = 5;
+      const mockOutput = `hash1${FIELD_SEPARATOR}2025-07-06T12:00:00Z${FIELD_SEPARATOR}author1${FIELD_SEPARATOR}feat: new feature${RECORD_SEPARATOR}`;
+      git.raw.mockResolvedValue(mockOutput);
+
+      const commits = await getCommitLogsByBranch(branch, days, 'author1');
+
+      expect(git.raw).toHaveBeenCalledWith(expect.arrayContaining(['--author=author1']));
+      expect(commits).toHaveLength(1);
+      expect(commits[0].author).toBe('author1');
     });
   });
 
