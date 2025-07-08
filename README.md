@@ -24,23 +24,10 @@ Antes de empezar, asegúrate de tener lo siguiente:
 
 Para poder usar la herramienta desde cualquier ubicación en tu terminal, se recomienda instalarla de forma global.
 
-1.  **Clona este repositorio:**
-    ```bash
-    git clone https://github.com/tu-usuario/git-llm-reporter.git
-    cd git-llm-reporter
-    ```
-
-2.  **Instala las dependencias:**
-    ```bash
-    npm install
-    ```
-
-3.  **Enlaza el paquete para uso global:**
-    *   Dentro del directorio del proyecto, ejecuta:
-        ```bash
-        npm link
-        ```
-    *   Esto creará un enlace simbólico que te permitirá llamar al script desde cualquier parte.
+```bash
+    npm i -g git-llm-reporter
+```
+    
 
 ## Uso
 
@@ -52,7 +39,10 @@ Para generar un reporte, utiliza el siguiente formato:
 
 ```bash
 gitreport <rango_de_commits>
+gitreport -b <rama>
 ```
+
+
 
 El `<rango_de_commits>` sigue la notación estándar de Git: `rama_base..rama_a_comparar`.
 
