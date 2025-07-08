@@ -1,6 +1,6 @@
 {
   "name": "git-llm-reporter",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "Genera reportes de trabajo usando Git y Gemini",
   "type": "module",
   "main": "src/app.js",
