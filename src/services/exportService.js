@@ -17,7 +17,7 @@ export const exportReport = async (
   reportType,
   format = "md"
 ) => {
-  const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
+  const timestamp = Date.now().toString();
   const filename = `${timestamp}-${reportType}.${format}`;
   const outputPath = path.join(outputDir, filename);
 
