@@ -84,12 +84,12 @@ export async function getCommitLogsByBranch(branch, days, devFilter) {
   }
 }
 
-export async function getCommitDiff(commitHash = '') {
+export async function getCommitDiff(commitHash = '', verbose = false) {
   try {
     // The -m flag is added to ensure that diffs for merge commits are also displayed.
 
     const diff = await git.show(["-m", commitHash.replace('\n', '').trim()]);
-    if (diff) {
+    if (diff && verbose) {
       console.log(commitHash, "OK!");
     }
     return diff;

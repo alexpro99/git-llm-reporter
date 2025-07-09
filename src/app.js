@@ -89,7 +89,7 @@ export async function run() {
       console.log("Iniciando análisis profundo de commits...");
       const commitsWithDiffs = [];
       for (const commit of commits) {
-        const diff = await getCommitDiff(commit.hash);
+        const diff = await getCommitDiff(commit.hash, verbose);
         if (diff) {
           commitsWithDiffs.push({ ...commit, diff });
         }
@@ -100,7 +100,7 @@ export async function run() {
         chunks.push(commitsWithDiffs.slice(i, i + chunkSize));
       }
 
-      report = await generateDeepDiveReport({ chunks, provider, modelName });
+      report = await generateDeepDiveReport({ chunks, provider, modelName, outPath });
     } else {
       console.log(
         `Logs obtenidos. Enviando a ${provider}/${modelName} para generar el reporte...`

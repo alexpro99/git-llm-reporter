@@ -1,5 +1,6 @@
 import { HumanMessage } from "@langchain/core/messages";
 import { createAiModel } from "./aiModelFactory.js";
+import { exportReport } from "./exportService.js";
 
 // --- Lógica de Prompts ---
 const getSummaryPrompt = (commitData) => `
@@ -107,6 +108,7 @@ export async function generateDeepDiveReport({
   modelName,
   OllamaClass, // Para inyección en pruebas
   GeminiClass, // Para inyección en pruebas
+  outPath,
 }) {
   const model = createAiModel(provider, modelName, OllamaClass, GeminiClass);
   console.log(
@@ -126,6 +128,7 @@ export async function generateDeepDiveReport({
 
     const analysis = await generateWithAI(model, analysisPrompt);
     if (analysis) {
+      if (outPath) await exportReport(analysis, outPath, `chunk-${index - 1}`);
       analyses.push(analysis);
     }
   }
