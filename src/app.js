@@ -34,6 +34,16 @@ const showHelp = () => {
     --chunk-size        Tamaño de los chunks para el análisis profundo (por defecto: 5).
     --dev-filter        Filtra los commits por un autor específico.
     -o, --out           Ruta para exportar el reporte (por defecto: no se exporta).
+
+  Ejemplos:
+    # Reporte resumido de la última semana en la rama 'main'
+    gitreport -b main -d 7
+
+    # Análisis profundo de la rama 'feat/ai' y exportación a un archivo
+    gitreport -b feat/ai --deep-dive -o reporte.md
+
+    # Análisis de un rango de commits específicos con llama 3
+    gitreport 1234567..89abcdef --deep-dive --provider ollama --model llama3 -o reporte.md
   `);
 };
 
@@ -55,73 +65,83 @@ async function getCommits(branch, days, commitRange, devFilter) {
 }
 
 export async function run() {
-  const args = process.argv.slice(2);
-  const {
-    commitRange,
-    verbose,
-    modelName,
-    help,
-    branch,
-    days,
-    reportType,
-    deepDive,
-    chunkSize,
-    provider,
-    devFilter,
-    outPath,
-  } = parseArgs(args);
+  try {
+    const args = process.argv.slice(2);
+    const {
+      commitRange,
+      verbose,
+      modelName,
+      help,
+      branch,
+      days,
+      reportType,
+      deepDive,
+      chunkSize,
+      provider,
+      devFilter,
+      outPath,
+    } = parseArgs(args);
 
-  if (help) {
-    showHelp();
-    process.exit(0);
-  }
+    if (help) {
+      showHelp();
+      process.exit(0);
+    }
 
-  const commits = await getCommits(branch, days, commitRange, devFilter);
+    const commits = await getCommits(branch, days, commitRange, devFilter);
 
-  if (verbose) {
-    console.log(`Commits obtenidos: ${JSON.stringify(commits, null, 2)}
+    if (verbose) {
+      console.log(`Commits obtenidos: ${JSON.stringify(commits, null, 2)}
 `);
-  }
+    }
 
-  if (commits && commits.length > 0) {
-    let report;
-    if (deepDive) {
-      console.log("Iniciando análisis profundo de commits...");
-      const commitsWithDiffs = [];
-      for (const commit of commits) {
-        const diff = await getCommitDiff(commit.hash, verbose);
-        if (diff) {
-          commitsWithDiffs.push({ ...commit, diff });
+    if (commits && commits.length > 0) {
+      let report;
+      if (deepDive) {
+        console.log("Iniciando análisis profundo de commits...");
+        const commitsWithDiffs = [];
+        for (const commit of commits) {
+          const diff = await getCommitDiff(commit.hash, verbose);
+          if (diff) {
+            commitsWithDiffs.push({ ...commit, diff });
+          }
+        }
+
+        const chunks = [];
+        for (let i = 0; i < commitsWithDiffs.length; i += chunkSize) {
+          chunks.push(commitsWithDiffs.slice(i, i + chunkSize));
+        }
+
+        report = await generateDeepDiveReport({
+          chunks,
+          provider,
+          modelName,
+          outPath,
+        });
+      } else {
+        console.log(
+          `Logs obtenidos. Enviando a ${provider}/${modelName} para generar el reporte...`
+        );
+        report = await generateReportWithAI({
+          commitData: commits,
+          provider,
+          modelName,
+          reportType,
+        });
+      }
+
+      if (report) {
+        console.log("\n--- INICIO DEL REPORTE ---\n");
+        console.log(report);
+        console.log("\n--- FIN DEL REPORTE ---\n");
+        if (outPath) {
+          await exportReport(report, outPath, reportType);
         }
       }
-
-      const chunks = [];
-      for (let i = 0; i < commitsWithDiffs.length; i += chunkSize) {
-        chunks.push(commitsWithDiffs.slice(i, i + chunkSize));
-      }
-
-      report = await generateDeepDiveReport({ chunks, provider, modelName, outPath });
     } else {
-      console.log(
-        `Logs obtenidos. Enviando a ${provider}/${modelName} para generar el reporte...`
-      );
-      report = await generateReportWithAI({
-        commitData: commits,
-        provider,
-        modelName,
-        reportType,
-      });
+      console.log("No se encontraron commits para analizar.");
     }
-
-    if (report) {
-      console.log("\n--- INICIO DEL REPORTE ---\n");
-      console.log(report);
-      console.log("\n--- FIN DEL REPORTE ---\n");
-      if (outPath) {
-        await exportReport(report, outPath, reportType);
-      }
-    }
-  } else {
-    console.log("No se encontraron commits para analizar.");
+  } catch (error) {
+    console.error(`\nError: ${error.message}`);
+    process.exit(1);
   }
 }

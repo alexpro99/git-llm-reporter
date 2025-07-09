@@ -30,6 +30,11 @@ export function createAiModel(
       });
     case "gemini":
     default:
+      if (!process.env.GEMINI_API_KEY) {
+        throw new Error(
+          "missing_gemini_api_key"
+        );
+      }
       return new GeminiClass({
         apiKey: process.env.GEMINI_API_KEY,
         model: modelName,
