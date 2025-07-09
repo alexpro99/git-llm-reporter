@@ -31,26 +31,62 @@ Para poder usar la herramienta desde cualquier ubicación en tu terminal, se rec
 
 ## Uso
 
-El script se ejecuta desde la línea de comandos, proporcionando un rango de commits como argumento.
+El script se ejecuta desde la línea de comandos, proporcionando un rango de commits o una rama.
+
+### Tipos de Reporte
+
+Puedes generar diferentes tipos de reportes según tus necesidades:
+
+*   **Reporte Resumido (`summary`):** (Por defecto)
+    *   **Visión:** Global y orientada a la gestión.
+    *   **Ideal para:** Tech Leads y Project Managers.
+    *   **Contenido:** Ofrece un resumen de alto nivel del trabajo realizado, agrupando las contribuciones por desarrollador y destacando los objetivos alcanzados.
+
+*   **Reporte Personal (`personal`):**
+    *   **Visión:** Enfocada en las contribuciones individuales.
+    *   **Ideal para:** Desarrolladores que necesitan documentar su trabajo.
+    *   **Contenido:** Genera un listado de tareas específicas realizadas por cada desarrollador, perfecto para reportes de actividad o "daily stand-ups".
+    *   **Uso:** `gitreport <rango> --report-type personal`
+
+*   **Análisis Profundo (`--deep-dive`):**
+    *   **Visión:** Técnica y detallada.
+    *   **Ideal para:** Arquitectos de Software y revisiones de código.
+    *   **Contenido:** No solo analiza los mensajes de commit, sino también los cambios en el código (`diffs`). El proceso divide los commits en fragmentos (`chunks`), analiza cada uno para entender los cambios técnicos y funcionales, y finalmente consolida todo en un reporte de "Análisis Profundo".
+    *   **Uso:** `gitreport <rango> --deep-dive`
+
+### Exportar Reportes
+
+Puedes exportar cualquier reporte a un archivo Markdown utilizando la opción `-o` o `--out`.
+
+```bash
+# Exporta un reporte resumido a un archivo llamado 'reporte.md'
+gitreport -b main -d 7 -o reporte.md
+
+# Exporta un análisis profundo a una ruta específica
+gitreport main..develop --deep-dive -o C:/Users/Pepe/Desktop/analisis_tecnico.md
+```
 
 ### Comando Principal
 
 Para generar un reporte, utiliza el siguiente formato:
 
 ```bash
-gitreport <rango_de_commits>
-gitreport -b <rama>
+gitreport <rango_de_commits> [opciones]
+gitreport -b <rama> [opciones]
 ```
-
-
 
 El `<rango_de_commits>` sigue la notación estándar de Git: `rama_base..rama_a_comparar`.
 
 ### Argumentos
 
-*   `<rango_de_commits>` (obligatorio): Especifica los commits que se deben analizar.
+*   `<rango_de_commits>`: Especifica los commits que se deben analizar.
     *   Ejemplo: `main..develop` analizará los commits que están en `develop` pero no en `main`.
     *   Ejemplo: `HEAD~5..HEAD` analizará los últimos 5 commits.
+*   `-b, --branch`: Especifica la rama para obtener los commits.
+*   `-d, --days`: Número de días hacia atrás (por defecto: 7).
+*   `--report-type`: `summary` o `personal`.
+*   `--deep-dive`: Activa el análisis profundo.
+*   `-o, --out`: Ruta para exportar el reporte en formato Markdown.
 
 ## Ejemplo de Uso
 
