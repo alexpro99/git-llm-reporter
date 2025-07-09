@@ -34,7 +34,7 @@ describe('exportService', () => {
       }
     };
     
-    const expectedTimestamp = new Date().toISOString().replace(/[:.]/g, '-');
+    const expectedTimestamp = Date.now();
     const expectedFilename = `${expectedTimestamp}-${reportType}.${format}`;
     const expectedFilepath = path.join(outputDir, expectedFilename);
 
