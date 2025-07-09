@@ -8,6 +8,7 @@ import {
   generateReportWithAI,
   generateDeepDiveReport,
 } from "./services/aiService.js";
+import { exportReport } from "./services/exportService.js";
 import { parseArgs } from "./utils/argsParser.js";
 
 dotenv.config();
@@ -32,6 +33,7 @@ const showHelp = () => {
     --deep-dive         Realiza un análisis profundo del código en cada commit.
     --chunk-size        Tamaño de los chunks para el análisis profundo (por defecto: 5).
     --dev-filter        Filtra los commits por un autor específico.
+    -o, --out           Ruta para exportar el reporte (por defecto: no se exporta).
   `);
 };
 
@@ -66,6 +68,7 @@ export async function run() {
     chunkSize,
     provider,
     devFilter,
+    outPath,
   } = parseArgs(args);
 
   if (help) {
@@ -114,6 +117,9 @@ export async function run() {
       console.log("\n--- INICIO DEL REPORTE ---\n");
       console.log(report);
       console.log("\n--- FIN DEL REPORTE ---\n");
+      if (outPath) {
+        await exportReport(report, outPath, reportType);
+      }
     }
   } else {
     console.log("No se encontraron commits para analizar.");

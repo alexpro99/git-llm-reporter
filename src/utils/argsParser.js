@@ -46,6 +46,14 @@ export function parseArgs(args) {
       ? args[devFilterIndex + 1]
       : null;
 
+  const outPathIndex = args.findIndex(
+    (arg) => arg === "-o" || arg === "--out"
+  );
+  const outPath =
+    outPathIndex !== -1 && args[outPathIndex + 1]
+      ? args[outPathIndex + 1]
+      : null;
+
   return {
     commitRange,
     verbose,
@@ -58,6 +66,7 @@ export function parseArgs(args) {
     chunkSize,
     provider,
     devFilter,
+    outPath,
   };
 }
 

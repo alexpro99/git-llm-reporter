@@ -1,5 +1,7 @@
 node_modules
+gitreport_export
 .env
 guia-tecnica.md
 git-llm-reporter*.tgz
 e2e/test-repo
+
