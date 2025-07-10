@@ -78,11 +78,11 @@ async function generateWithAI(model, prompt) {
     const result = await model.invoke([new HumanMessage({ content: prompt })]);
     return result.content;
   } catch (error) {
-    if ((error = "missing_gemini_api_key"))
+    if (error == "missing_gemini_api_key")
       throw new Error(
         "La variable de entorno GEMINI_API_KEY no está definida. Por favor, configúrala para usar el proveedor Gemini."
       );
-      
+
     console.error("Error al generar contenido con la IA:", error);
     return null;
   }

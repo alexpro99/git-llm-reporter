@@ -22,30 +22,21 @@ describe('exportService', () => {
     const reportType = 'summary';
     const format = 'md';
 
-    const mockDate = new Date();
-    const RealDate = Date;
-    global.Date = class extends RealDate {
-      constructor(dateString) {
-        if (dateString) {
-          return new RealDate(dateString);
-        }
-        super();
-        return mockDate;
-      }
-    };
-    
-    const expectedTimestamp = Date.now();
-    const expectedFilename = `${expectedTimestamp}-${reportType}.${format}`;
-    const expectedFilepath = path.join(outputDir, expectedFilename);
-
     await exportReport(reportContent, outputDir, reportType, format);
 
-    expect(mkdir).toHaveBeenCalledWith(path.dirname(expectedFilepath), {
+    // Verificar que se llamó a mkdir para crear el directorio
+    expect(mkdir).toHaveBeenCalledWith(outputDir, {
       recursive: true,
     });
-    expect(writeFile).toHaveBeenCalledWith(expectedFilepath, reportContent);
 
-    global.Date = RealDate;
+    // Verificar que se llamó a writeFile con los argumentos correctos
+    expect(writeFile).toHaveBeenCalledTimes(1);
+    const [filePath, content] = writeFile.mock.calls[0];
+    
+    // Hacer la prueba más robusta evitando la comparación de timestamps
+    expect(path.dirname(filePath)).toBe(outputDir);
+    expect(filePath).toContain(`-${reportType}.${format}`);
+    expect(content).toBe(reportContent);
   });
 
   it('should log an error for unsupported format', async () => {

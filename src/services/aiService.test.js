@@ -1,12 +1,26 @@
-import { jest, describe, it, expect, beforeEach } from '@jest/globals';
+import { jest, describe, it, expect, beforeEach, beforeAll, afterAll } from '@jest/globals';
 import { generateReportWithAI, generateDeepDiveReport } from './aiService.js';
 
 describe('aiService with dependency injection', () => {
   let mockInvoke;
   let MockOllama;
   let MockGemini;
+  let originalEnv;
+
+  // Guardar el estado original de las variables de entorno
+  beforeAll(() => {
+    originalEnv = { ...process.env };
+  });
+
+  // Restaurar las variables de entorno después de todas las pruebas
+  afterAll(() => {
+    process.env = originalEnv;
+  });
 
   beforeEach(() => {
+    // Asegurarse de que el mock de E2E no esté activo para estos tests
+    delete process.env.E2E_TEST_MOCK_AI;
+
     mockInvoke = jest.fn();
     MockOllama = jest.fn().mockImplementation(() => ({
       invoke: mockInvoke,
