@@ -10,6 +10,7 @@ describe('aiService with dependency injection', () => {
   // Guardar el estado original de las variables de entorno
   beforeAll(() => {
     originalEnv = { ...process.env };
+    process.env.GEMINI_API_KEY = 'testapi'
   });
 
   // Restaurar las variables de entorno después de todas las pruebas
